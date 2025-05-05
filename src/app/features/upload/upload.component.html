@@ -1,0 +1,214 @@
+<mat-card class="cardWithShadow">
+  <mat-card-content>
+    <div class="upload-container">
+      <h2 class="p-b-16">Deduplication File Upload</h2>
+
+      <input
+        type="file"
+        id="fileInput"
+        (change)="onFileSelected($event)"
+        style="display: none"
+        accept=".tar.gz"
+      />
+
+      <!-- Upload button that triggers file selection -->
+      <button
+        type="button"
+        mat-raised-button
+        color="primary"
+        (click)="triggerFileInput()"
+      >
+        <mat-icon>cloud_upload</mat-icon>
+        Select TAR.GZ File
+      </button>
+
+      <!-- Selected file info -->
+      <div *ngIf="selectedFiles.length > 0">
+        <div class="file-list">
+          <h3>Selected File:</h3>
+          <mat-list>
+            <mat-list-item *ngFor="let file of selectedFiles">
+              <mat-icon matListItemIcon>
+                <mat-icon>archive</mat-icon>
+              </mat-icon>
+              <div matListItemTitle>{{ file.name }}</div>
+              <div matListItemLine>{{ formatFileSize(file.size) }}</div>
+            </mat-list-item>
+          </mat-list>
+
+          <div class="action-buttons">
+            <button
+              type="button"
+              mat-raised-button
+              color="warn"
+              (click)="clearSelection()"
+            >
+              <mat-icon>clear</mat-icon>
+              Clear Selection
+            </button>
+            <button
+              type="button"
+              mat-raised-button
+              color="accent"
+              (click)="uploadFiles()"
+              [disabled]="uploadInProgress"
+            >
+              <mat-icon>file_upload</mat-icon>
+              Upload File
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Upload progress -->
+      <div *ngIf="uploadInProgress">
+        <div class="progress-container">
+          <mat-progress-bar
+            mode="determinate"
+            [value]="uploadProgress"
+          ></mat-progress-bar>
+          <div>{{ uploadProgress }}%</div>
+        </div>
+      </div>
+
+      <!-- Upload success message -->
+      <div *ngIf="uploadComplete && processId" class="success-message">
+        <mat-card class="success-card">
+          <mat-card-content>
+            <div class="success-icon">
+              <mat-icon>check_circle</mat-icon>
+            </div>
+            <h3>Upload Successful!</h3>
+            <p>Your file has been uploaded and is ready for deduplication.</p>
+            <p>
+              Process ID: <strong>{{ processId }}</strong>
+            </p>
+            <p>
+              Files extracted: <strong>{{ fileCount }}</strong>
+            </p>
+
+            <!-- Uploaded files display -->
+            <div
+              *ngIf="uploadedFiles.length > 0"
+              class="uploaded-files-container"
+            >
+              <h4>Extracted Images:</h4>
+              <div class="loading-files" *ngIf="loadingFiles">
+                <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+                <p>Loading files...</p>
+              </div>
+              <div class="files-grid" *ngIf="!loadingFiles">
+                <div *ngFor="let file of uploadedFiles" class="file-item">
+                  <div class="image-container">
+                    <ng-container
+                      *ngIf="
+                        file.base64Preview && file.base64Preview.length > 0;
+                        else noImage
+                      "
+                    >
+                      <img
+                        [src]="file.base64Preview"
+                        [alt]="file.fileName"
+                        class="file-image"
+                        (error)="handleImageError($event)"
+                      />
+                    </ng-container>
+                    <ng-template #noImage>
+                      <div class="no-image-container">
+                        <mat-icon class="no-image-icon"
+                          >image_not_supported</mat-icon
+                        >
+                        <p>No image available</p>
+                      </div>
+                    </ng-template>
+                  </div>
+                  <div class="file-details">
+                    <p class="file-name" [title]="file.fileName">
+                      {{ file.fileName }}
+                    </p>
+                    <p class="file-id" [title]="file.id">ID: {{ file.id }}</p>
+                    <p
+                      *ngIf="file.status"
+                      class="file-status"
+                      [ngClass]="{
+                        'status-conflict': file.status === 'Conflict'
+                      }"
+                    >
+                      Status: {{ file.status }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Conflicts section -->
+              <div
+                *ngIf="hasConflicts && conflicts.length > 0"
+                class="conflicts-container"
+              >
+                <h4>Potential Conflicts Detected:</h4>
+                <div class="conflicts-list">
+                  <div *ngFor="let conflict of conflicts" class="conflict-item">
+                    <p><strong>File:</strong> {{ conflict.fileName }}</p>
+                    <p>
+                      <strong>Matched with:</strong>
+                      {{ conflict.matchedFileName }}
+                    </p>
+                    <p>
+                      <strong>Confidence:</strong>
+                      {{ conflict.confidence | percent }}
+                    </p>
+                    <p><strong>Status:</strong> {{ conflict.status }}</p>
+                  </div>
+                </div>
+                <p class="conflict-note">
+                  These conflicts will need to be resolved during the
+                  deduplication process.
+                </p>
+              </div>
+            </div>
+
+            <div class="action-buttons">
+              <button
+                type="button"
+                mat-raised-button
+                color="primary"
+                (click)="goToDeduplication()"
+              >
+                <mat-icon>compare_arrows</mat-icon>
+                Go to Deduplication
+              </button>
+              <button
+                *ngIf="hasConflicts && conflicts.length > 0"
+                type="button"
+                mat-raised-button
+                color="warning"
+                (click)="goToConflicts()"
+              >
+                <mat-icon>warning</mat-icon>
+                Go to Conflicts
+              </button>
+              <button
+                type="button"
+                mat-raised-button
+                color="accent"
+                (click)="viewHistory()"
+              >
+                <mat-icon>history</mat-icon>
+                View Upload History
+              </button>
+              <button
+                type="button"
+                mat-raised-button
+                color="basic"
+                (click)="clearSelection()"
+              >
+                <mat-icon>refresh</mat-icon>
+                Upload Another File
+              </button>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+  </mat-card-content>
+</mat-card>

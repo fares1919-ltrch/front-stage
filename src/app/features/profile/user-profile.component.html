@@ -1,0 +1,237 @@
+<div class="profile-container">
+  <mat-card class="profile-card">
+    <mat-card-header>
+      <mat-card-title>User Profile</mat-card-title>
+      <mat-card-subtitle *ngIf="userProfile">
+        <div class="profile-status">
+          <span
+            class="role-badge"
+            [ngClass]="{
+              'role-user': getRoleValue(userProfile.role) === 0,
+              'role-admin': getRoleValue(userProfile.role) === 1,
+              'role-superadmin': getRoleValue(userProfile.role) === 2
+            }"
+          >
+            {{ getRoleDisplay(userProfile.role) }}
+          </span>
+
+          <span
+            class="validation-badge"
+            [ngClass]="{
+              validated: userProfile.isValidated,
+              'not-validated': !userProfile.isValidated
+            }"
+          >
+            {{
+              userProfile.isValidated
+                ? "Account Confirmed"
+                : "Account Not Confirmed"
+            }}
+          </span>
+        </div>
+        <div *ngIf="!userProfile.isValidated" class="validation-message">
+          Your account is pending confirmation by an administrator. Some
+          features will be limited until your account is confirmed.
+        </div>
+      </mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <div *ngIf="isLoading" class="loading-spinner">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Loading profile data...</p>
+      </div>
+
+      <form
+        [formGroup]="profileForm"
+        (ngSubmit)="onSubmit()"
+        class="profile-form"
+        *ngIf="!isLoading"
+      >
+        <div class="profile-picture-section">
+          <div class="profile-picture-container">
+            <img
+              [src]="previewUrl || defaultImageUrl"
+              alt="Profile Picture"
+              class="profile-picture"
+              (error)="handleImageError($event)"
+            />
+            <div *ngIf="isImageLoading" class="profile-picture-loading">
+              <mat-spinner diameter="40"></mat-spinner>
+            </div>
+            <div *ngIf="debugMode" class="debug-info">
+              <small
+                >Image URL: {{ getSafeImageUrlForDisplay(previewUrl) }}</small
+              >
+            </div>
+            <div
+              class="profile-picture-actions"
+              *ngIf="isEditing && !isImageLoading"
+            >
+              <input
+                type="file"
+                (change)="onFileSelected($event)"
+                accept="image/jpeg,image/jpg,image/png"
+                style="display: none"
+                #fileInput
+                aria-label="Upload profile picture"
+              />
+              <button
+                mat-icon-button
+                color="primary"
+                (click)="fileInput.click()"
+                aria-label="Upload profile picture"
+                [disabled]="isLoading"
+                type="button"
+              >
+                <mat-icon>photo_camera</mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                color="warn"
+                (click)="deleteProfilePicture()"
+                *ngIf="previewUrl"
+                aria-label="Delete profile picture"
+                [disabled]="isLoading"
+                type="button"
+              >
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </div>
+          <div class="profile-picture-hint" *ngIf="isEditing">
+            <p>Click the camera icon to upload a new profile picture</p>
+            <p class="small-text">Supported formats: JPG, PNG (max 5MB)</p>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Username</mat-label>
+            <input
+              matInput
+              formControlName="userName"
+              [readonly]="!isEditing"
+              aria-label="Username"
+              placeholder="Enter your username"
+            />
+            <mat-error *ngIf="profileForm.get('userName')?.hasError('required')"
+              >Username is required</mat-error
+            >
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Email</mat-label>
+            <input
+              matInput
+              formControlName="email"
+              [readonly]="!isEditing"
+              aria-label="Email"
+              placeholder="Enter your email"
+              type="email"
+            />
+            <mat-error *ngIf="profileForm.get('email')?.hasError('required')"
+              >Email is required</mat-error
+            >
+            <mat-error *ngIf="profileForm.get('email')?.hasError('email')"
+              >Please enter a valid email</mat-error
+            >
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Phone Number</mat-label>
+            <input
+              matInput
+              formControlName="phoneNumber"
+              [readonly]="!isEditing"
+              aria-label="Phone Number"
+              placeholder="Enter your phone number"
+              type="tel"
+            />
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Address</mat-label>
+            <input
+              matInput
+              formControlName="address"
+              [readonly]="!isEditing"
+              aria-label="Address"
+              placeholder="Enter your address"
+            />
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>City</mat-label>
+            <input
+              matInput
+              formControlName="city"
+              [readonly]="!isEditing"
+              aria-label="City"
+              placeholder="Enter your city"
+            />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Country</mat-label>
+            <input
+              matInput
+              formControlName="country"
+              [readonly]="!isEditing"
+              aria-label="Country"
+              placeholder="Enter your country"
+            />
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Date of Birth</mat-label>
+            <input
+              matInput
+              [matDatepicker]="picker"
+              formControlName="dateOfBirth"
+              [readonly]="!isEditing"
+              aria-label="Date of Birth"
+              placeholder="MM/DD/YYYY"
+            />
+            <mat-datepicker-toggle
+              matSuffix
+              [for]="picker"
+              *ngIf="isEditing"
+            ></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+          </mat-form-field>
+        </div>
+
+        <div class="form-actions">
+          <button
+            mat-button
+            type="button"
+            (click)="toggleEdit()"
+            [attr.aria-label]="isEditing ? 'Cancel editing' : 'Edit profile'"
+            [disabled]="isLoading"
+          >
+            {{ isEditing ? "Cancel" : "Edit Profile" }}
+          </button>
+          <button
+            mat-raised-button
+            color="primary"
+            type="submit"
+            [disabled]="!profileForm.valid || !isEditing || isLoading"
+            aria-label="Save profile changes"
+          >
+            <mat-spinner diameter="20" *ngIf="isLoading"></mat-spinner>
+            <span *ngIf="!isLoading">Save Changes</span>
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

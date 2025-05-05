@@ -1,0 +1,32 @@
+<div class="sidebar-container">
+  <!-- Branding and toggle button -->
+  <div class="sidebar-header">
+    <div class="branding">
+      <img src="./assets/images/logos/twyn.png" class="logo" alt="logo" />
+    </div>
+
+    @if(showToggle) {
+    <button
+      type="button"
+      aria-label="Close sidebar"
+      (click)="toggleMobileNav.emit()"
+      class="close-button"
+    >
+      <i-tabler name="x" class="close-icon"></i-tabler>
+    </button>
+    }
+  </div>
+
+  <!-- Navigation items based on user role -->
+  <div class="navigation-container" id="sidebar-scroll-container">
+    <mat-nav-list class="sidebar-nav">
+      @for (item of navItems; track item) {
+      <app-nav-item
+        [item]="item"
+        [depth]="0"
+        (notify)="toggleMobileNav.emit()"
+      ></app-nav-item>
+      }
+    </mat-nav-list>
+  </div>
+</div>

@@ -1,0 +1,153 @@
+<div
+  class="blank-layout-container justify-content-center align-items-center bg-light"
+>
+  <div
+    class="position-relative row w-100 h-100 bg-gredient justify-content-center"
+  >
+    <div class="col-lg-4 d-flex align-items-center">
+      <mat-card class="cardWithShadow boxed-auth">
+        <mat-card-content class="p-32">
+          <div class="text-center">
+            <a [routerLink]="['/dashboard']">
+              <img
+                src="./assets/images/logos/twyn_logo.jpg"
+                class="align-middle m-2"
+                alt="logo"
+              />
+            </a>
+          </div>
+
+          <!-- <div class="row m-t-24 custom-row justify-content-center">
+            <div class="col-12 col-sm-6">
+              <button mat-stroked-button class="w-100">
+                <div class="d-flex align-items-center">
+                  <img src="/assets/images/svgs/google-icon.svg" alt="google" width="16" class="m-r-8" />
+                  <span (click)="onLoginGoogle()">
+                    Login with Google
+                  </span>
+                </div>
+              </button>
+            </div>
+
+          </div> -->
+
+          <div class="or-border m-t-30">sign up with</div>
+
+          <form class="m-t-30" [formGroup]="form" (ngSubmit)="onRegister()">
+            <!-- Username field -->
+            <mat-label class="f-s-14 f-w-600 m-b-12 d-block"
+              >Username *</mat-label
+            >
+            <mat-form-field appearance="outline" class="w-100" color="primary">
+              <input
+                matInput
+                formControlName="username"
+                placeholder="Username"
+                autocomplete="off"
+              />
+              <mat-hint>Minimum 6 characters required</mat-hint>
+              <mat-error *ngIf="form.get('username')?.errors?.['required']"
+                >Username is required</mat-error
+              >
+              <mat-error *ngIf="form.get('username')?.errors?.['minlength']"
+                >Username must be at least 6 characters</mat-error
+              >
+            </mat-form-field>
+
+            <!-- Email field -->
+            <mat-label class="f-s-14 f-w-600 m-b-12 d-block"
+              >Email Address *</mat-label
+            >
+            <mat-form-field appearance="outline" class="w-100" color="primary">
+              <input
+                matInput
+                formControlName="email"
+                type="email"
+                placeholder="Email address"
+                autocomplete="off"
+              />
+              <mat-error *ngIf="form.get('email')?.errors?.['required']"
+                >Email is required</mat-error
+              >
+              <mat-error *ngIf="form.get('email')?.errors?.['email']"
+                >Please enter a valid email address</mat-error
+              >
+            </mat-form-field>
+
+            <!-- Password field -->
+            <mat-label class="f-s-14 f-w-600 m-b-12 d-block"
+              >Password *</mat-label
+            >
+            <mat-form-field appearance="outline" class="w-100" color="primary">
+              <input
+                matInput
+                formControlName="password"
+                [type]="hidePassword ? 'password' : 'text'"
+                placeholder="Password"
+                autocomplete="new-password"
+              />
+              <mat-icon matSuffix (click)="hidePassword = !hidePassword">
+                {{ hidePassword ? "visibility_off" : "visibility" }}
+              </mat-icon>
+              <mat-hint>Minimum 8 characters required</mat-hint>
+              <mat-error *ngIf="form.get('password')?.errors?.['required']"
+                >Password is required</mat-error
+              >
+              <mat-error *ngIf="form.get('password')?.errors?.['minlength']"
+                >Password must be at least 8 characters</mat-error
+              >
+            </mat-form-field>
+
+            <!-- Confirm Password field -->
+            <mat-label class="f-s-14 f-w-600 m-b-12 d-block"
+              >Confirm Password *</mat-label
+            >
+            <mat-form-field appearance="outline" class="w-100" color="primary">
+              <input
+                matInput
+                formControlName="confirmPassword"
+                [type]="hideConfirmPassword ? 'password' : 'text'"
+                placeholder="Confirm password"
+                autocomplete="new-password"
+              />
+              <mat-icon
+                matSuffix
+                (click)="hideConfirmPassword = !hideConfirmPassword"
+              >
+                {{ hideConfirmPassword ? "visibility_off" : "visibility" }}
+              </mat-icon>
+              <mat-error
+                *ngIf="form.get('confirmPassword')?.errors?.['required']"
+                >Password confirmation is required</mat-error
+              >
+              <mat-error *ngIf="form.errors?.['passwordMismatch']"
+                >Passwords do not match</mat-error
+              >
+            </mat-form-field>
+
+            <!-- Submit button -->
+            <button
+              mat-flat-button
+              color="primary"
+              class="w-100"
+              type="submit"
+              [disabled]="form.invalid"
+            >
+              Sign Up
+            </button>
+          </form>
+
+          <span class="d-block f-w-500 text-center m-t-24"
+            >Already have an Account?
+            <a
+              [routerLink]="['/authentication/login']"
+              class="text-decoration-none text-primary f-w-500 f-s-14"
+            >
+              Sign In</a
+            >
+          </span>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>

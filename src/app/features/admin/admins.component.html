@@ -1,0 +1,159 @@
+<mat-card class="cardWithShadow">
+  <mat-card-content>
+    <mat-card-title>User Management</mat-card-title>
+
+    <div class="table-responsive">
+      <table mat-table [dataSource]="dataSource1" class="w-100">
+        <!-- Username Column -->
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef class="f-w-600 f-s-14 p-l-0">
+            Username
+          </th>
+          <td mat-cell *matCellDef="let element" class="p-l-0">
+            <div class="d-flex align-items-center">
+              <div class="m-l-16">
+                <h6 class="f-s-14 f-w-600">
+                  {{ element.userName }}
+                </h6>
+              </div>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Email Column -->
+        <ng-container matColumnDef="email">
+          <th mat-header-cell *matHeaderCellDef class="f-w-600 f-s-14">
+            Email
+          </th>
+          <td mat-cell *matCellDef="let element" class="p-l-0">
+            <div class="d-flex align-items-center">
+              <div class="m-l-16">
+                <h6 class="f-s-14 f-w-600">
+                  {{ element.email }}
+                </h6>
+              </div>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Role Column -->
+        <ng-container matColumnDef="role">
+          <th mat-header-cell *matHeaderCellDef class="f-w-600 f-s-14">Role</th>
+          <td mat-cell *matCellDef="let element">
+            <span
+              *ngIf="element.role === UserRole.SuperAdmin"
+              class="bg-light-primary text-primary rounded f-w-600 p-6 p-y-4 f-s-12"
+            >
+              SuperAdmin
+            </span>
+            <span
+              *ngIf="element.role === UserRole.Admin"
+              class="bg-light-info text-info rounded f-w-600 p-6 p-y-4 f-s-12"
+            >
+              Admin
+            </span>
+            <span
+              *ngIf="element.role === UserRole.User"
+              class="bg-light-gray text-gray rounded f-w-600 p-6 p-y-4 f-s-12"
+            >
+              User
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Status Column -->
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef class="f-w-600 f-s-14">
+            Status
+          </th>
+          <td mat-cell *matCellDef="let element">
+            <span
+              *ngIf="element.isValidated"
+              class="bg-light-success text-success rounded f-w-600 p-6 p-y-4 f-s-12"
+            >
+              Confirmed
+            </span>
+            <span
+              *ngIf="!element.isValidated"
+              class="bg-light-error text-error rounded f-w-600 p-6 p-y-4 f-s-12"
+            >
+              Not Confirmed
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Actions Column -->
+        <ng-container matColumnDef="assigned">
+          <th mat-header-cell *matHeaderCellDef class="f-w-600 f-s-14">
+            Actions
+          </th>
+          <td mat-cell *matCellDef="let element">
+            <button
+              mat-icon-button
+              [matMenuTriggerFor]="menu"
+              aria-label="User actions menu"
+            >
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #menu="matMenu">
+              <!-- Confirm User Button -->
+              <button
+                mat-menu-item
+                (click)="confirmUser(element.userId)"
+                *ngIf="!element.isValidated && canConfirm()"
+                [disabled]="element.role === UserRole.SuperAdmin"
+              >
+                <mat-icon>check_circle</mat-icon>
+                <span>Confirm User</span>
+              </button>
+
+              <!-- Promote User Button -->
+              <button
+                mat-menu-item
+                (click)="promoteUser(element.userId)"
+                *ngIf="element.role === UserRole.User && canPromote()"
+              >
+                <mat-icon>arrow_upward</mat-icon>
+                <span>Promote to Admin</span>
+              </button>
+
+              <!-- Demote Admin Button -->
+              <button
+                mat-menu-item
+                (click)="demoteUser(element.userId)"
+                *ngIf="element.role === UserRole.Admin && canDemote()"
+              >
+                <mat-icon>arrow_downward</mat-icon>
+                <span>Demote to User</span>
+              </button>
+
+              <!-- Delete User Button -->
+              <button
+                mat-menu-item
+                (click)="deleteUser(element.userId)"
+                *ngIf="canDelete()"
+                [disabled]="element.role === UserRole.SuperAdmin"
+              >
+                <mat-icon>delete</mat-icon>
+                <span>Delete User</span>
+              </button>
+            </mat-menu>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns1"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns1"></tr>
+      </table>
+
+      <!-- Pagination -->
+      <mat-paginator
+        [length]="totalUsers"
+        [pageSize]="pageSize"
+        [pageSizeOptions]="pageSizeOptions"
+        (page)="onPageChange($event)"
+        showFirstLastButtons
+        aria-label="Select page of users"
+      ></mat-paginator>
+    </div>
+  </mat-card-content>
+</mat-card>

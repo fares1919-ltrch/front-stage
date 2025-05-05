@@ -1,0 +1,113 @@
+<h2 mat-dialog-title>Duplicate Record Details</h2>
+
+<mat-dialog-content>
+  <!-- Loading indicator -->
+  <div *ngIf="isLoading" class="loading-container">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Loading record details...</p>
+  </div>
+
+  <!-- Error message -->
+  <div *ngIf="error" class="error-container">
+    <mat-icon color="warn">error_outline</mat-icon>
+    <p>{{ error }}</p>
+    <button mat-button color="primary" (click)="loadRecordDetails()">
+      <mat-icon>refresh</mat-icon>
+      Retry
+    </button>
+  </div>
+
+  <!-- Record details -->
+  <div *ngIf="!isLoading && !error && record" class="record-details">
+    <div class="record-header">
+      <h3>{{ record.originalFileName }}</h3>
+      <div class="record-meta">
+        <p><strong>Record ID:</strong> {{ record.id }}</p>
+        <p><strong>Process ID:</strong> {{ record.processId }}</p>
+        <p>
+          <strong>Status:</strong>
+          <span
+            class="status-badge"
+            [ngClass]="
+              record.status
+                ? 'status-' + record.status.toLowerCase()
+                : 'status-unknown'
+            "
+            >{{ record.status || "Unknown" }}</span
+          >
+        </p>
+        <p><strong>Detected:</strong> {{ formatDate(record.detectedDate) }}</p>
+        <p *ngIf="record.confirmationDate">
+          <strong>Confirmed:</strong> {{ formatDate(record.confirmationDate) }}
+        </p>
+        <p *ngIf="record.confirmationUser">
+          <strong>Confirmed By:</strong> {{ record.confirmationUser }}
+        </p>
+        <p *ngIf="record.notes"><strong>Notes:</strong> {{ record.notes }}</p>
+      </div>
+    </div>
+
+    <div class="images-section">
+      <div class="original-image">
+        <h4>Original Image</h4>
+        <div class="image-container">
+          <img
+            *ngIf="originalImagePreview"
+            [src]="originalImagePreview"
+            alt="Original image"
+          />
+          <div *ngIf="!originalImagePreview" class="no-image">
+            <mat-icon>image_not_supported</mat-icon>
+            <p>No preview available</p>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="duplicates-section"
+        *ngIf="record.duplicates && record.duplicates.length > 0"
+      >
+        <h4>Duplicate Images ({{ record.duplicates.length }})</h4>
+        <div class="duplicates-grid">
+          <div
+            *ngFor="let duplicate of record.duplicates"
+            class="duplicate-item"
+          >
+            <div class="image-container">
+              <img
+                *ngIf="duplicateImagePreviews.get(duplicate.fileId)"
+                [src]="duplicateImagePreviews.get(duplicate.fileId)"
+                alt="Duplicate image"
+              />
+              <div
+                *ngIf="!duplicateImagePreviews.get(duplicate.fileId)"
+                class="no-image"
+              >
+                <mat-icon>image_not_supported</mat-icon>
+                <p>No preview available</p>
+              </div>
+            </div>
+            <div class="duplicate-details">
+              <p class="duplicate-filename">{{ duplicate.fileName }}</p>
+              <p class="duplicate-confidence">
+                Match: {{ formatConfidence(duplicate.confidence) }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        *ngIf="!record.duplicates || record.duplicates.length === 0"
+        class="no-duplicates"
+      >
+        <mat-icon>info</mat-icon>
+        <p>No duplicate images found for this record.</p>
+      </div>
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="close()">Close</button>
+</mat-dialog-actions>

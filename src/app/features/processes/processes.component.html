@@ -1,0 +1,185 @@
+<mat-card class="cardWithShadow">
+  <mat-card-content>
+    <div class="d-flex align-items-center m-b-20">
+      <div>
+        <mat-card-title>Processes Overview</mat-card-title>
+        <mat-card-subtitle
+          >View and manage all deduplication processes</mat-card-subtitle
+        >
+      </div>
+      <div class="m-l-auto">
+        <button mat-raised-button color="primary" (click)="newUpload()">
+          <mat-icon>cloud_upload</mat-icon>
+          New Upload
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading indicator -->
+    <div *ngIf="isLoading" class="text-center p-y-30">
+      <mat-spinner diameter="40" class="m-x-auto"></mat-spinner>
+      <p class="m-t-16">Loading processes...</p>
+    </div>
+
+    <!-- Error message -->
+    <div *ngIf="error" class="error-container text-center p-y-30">
+      <mat-icon color="warn">error_outline</mat-icon>
+      <p class="m-t-8">{{ error }}</p>
+      <button mat-button color="primary" (click)="loadProcesses()">
+        <mat-icon>refresh</mat-icon>
+        Retry
+      </button>
+    </div>
+
+    <!-- No processes message -->
+    <div
+      *ngIf="!isLoading && !error && dataSource.data.length === 0"
+      class="text-center p-y-30"
+    >
+      <mat-icon class="no-data-icon">folder_off</mat-icon>
+      <p class="m-t-8">No processes found</p>
+      <p class="m-t-8">Upload a file to start a new process</p>
+      <button mat-raised-button color="primary" (click)="newUpload()">
+        <mat-icon>cloud_upload</mat-icon>
+        Upload Files
+      </button>
+    </div>
+
+    <!-- Process table -->
+    <div
+      *ngIf="!isLoading && !error && dataSource.data.length > 0"
+      class="table-responsive"
+    >
+      <table mat-table [dataSource]="dataSource" matSort class="w-100">
+        <!-- Process ID Column -->
+        <ng-container matColumnDef="id">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Process ID</th>
+          <td mat-cell *matCellDef="let process">
+            <span class="process-id">
+              {{ formatProcessId(process.id) }}
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Name Column -->
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
+          <td mat-cell *matCellDef="let process">
+            {{ process.name || "Unnamed Process" }}
+          </td>
+        </ng-container>
+
+        <!-- Date Column -->
+        <ng-container matColumnDef="createdAt">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Created</th>
+          <td mat-cell *matCellDef="let process">
+            {{ formatDate(process.createdAt) }}
+          </td>
+        </ng-container>
+
+        <!-- Username Column -->
+        <ng-container matColumnDef="username">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>User</th>
+          <td mat-cell *matCellDef="let process">
+            {{ process.username || "System" }}
+          </td>
+        </ng-container>
+
+        <!-- Total Files Column -->
+        <ng-container matColumnDef="totalFiles">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Total Files</th>
+          <td mat-cell *matCellDef="let process">
+            {{ process.totalFiles || 0 }}
+          </td>
+        </ng-container>
+
+        <!-- Processed Files Column -->
+        <ng-container matColumnDef="processedFiles">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Processed</th>
+          <td mat-cell *matCellDef="let process">
+            <div class="progress-container">
+              <div class="progress-text">
+                {{ process.processedFiles || 0 }} /
+                {{ process.totalFiles || 0 }}
+              </div>
+              <mat-progress-bar
+                mode="determinate"
+                [value]="
+                  (process.processedFiles / (process.totalFiles || 1)) * 100
+                "
+                class="m-t-4"
+              ></mat-progress-bar>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Status Column -->
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
+          <td mat-cell *matCellDef="let process">
+            <span
+              class="status-badge"
+              [ngClass]="getStatusClass(process.status)"
+            >
+              {{ process.status || "Ready to Start" }}
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Actions Column -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let process">
+            <div class="action-buttons">
+              <button
+                mat-icon-button
+                color="primary"
+                [disabled]="processingIds.has(formatProcessId(process.id))"
+                (click)="startDeduplication(process.id, $event)"
+                matTooltip="Start Deduplication"
+              >
+                <mat-icon>play_arrow</mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                color="accent"
+                (click)="viewProcessDetails(process.id)"
+                matTooltip="View Details"
+              >
+                <mat-icon>visibility</mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                color="warn"
+                (click)="viewProcessConflicts(process.id)"
+                matTooltip="View Conflicts"
+              >
+                <mat-icon>warning</mat-icon>
+              </button>
+            </div>
+          </td>
+        </ng-container>
+
+        <tr
+          mat-header-row
+          *matHeaderRowDef="displayedColumns; sticky: true"
+        ></tr>
+        <tr
+          mat-row
+          *matRowDef="let row; columns: displayedColumns"
+          (click)="viewProcessDetails(row.id)"
+          class="clickable-row"
+        ></tr>
+      </table>
+
+      <mat-paginator
+        [length]="totalProcesses"
+        [pageSize]="pageSize"
+        [pageSizeOptions]="pageSizeOptions"
+        (page)="onPageChange($event)"
+        showFirstLastButtons
+        aria-label="Select page of processes"
+      ></mat-paginator>
+    </div>
+  </mat-card-content>
+</mat-card>

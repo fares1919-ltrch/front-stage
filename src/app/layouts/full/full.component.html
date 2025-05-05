@@ -1,0 +1,42 @@
+<mat-sidenav-container class="mainWrapper" autosize autoFocus dir="ltr">
+  <!-- ============================================================== -->
+  <!-- Vertical Sidebar -->
+  <!-- ============================================================== -->
+  <mat-sidenav
+    #leftsidenav
+    [mode]="isOver ? 'over' : 'side'"
+    [opened]="!isOver && !options.sidenavCollapsed"
+    [ngClass]="{ 'mat-sidenav-collapsed': options.sidenavCollapsed }"
+    (openedChange)="onSidenavOpenedChange($event)"
+    (closedStart)="onSidenavClosedStart()"
+    class="sidebarNav"
+  >
+    <div class="flex-layout">
+      <!-- Sidebar component with role-based navigation -->
+      <app-sidebar
+        (toggleMobileNav)="sidenav.toggle()"
+        [showToggle]="isOver"
+      ></app-sidebar>
+    </div>
+  </mat-sidenav>
+
+  <!-- ============================================================== -->
+  <!-- Main Content -->
+  <!-- ============================================================== -->
+  <mat-sidenav-content class="contentWrapper" #content>
+    <!-- ============================================================== -->
+    <!-- VerticalHeader -->
+    <!-- ============================================================== -->
+    <app-header
+      [showToggle]="!isOver"
+      (toggleMobileNav)="isOver ? sidenav.toggle() : toggleCollapsed()"
+    ></app-header>
+
+    <main class="pageWrapper">
+      <!-- ============================================================== -->
+      <!-- Outlet -->
+      <!-- ============================================================== -->
+      <router-outlet></router-outlet>
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

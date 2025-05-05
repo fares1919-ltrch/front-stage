@@ -1,0 +1,159 @@
+<div
+  class="blank-layout-container justify-content-center align-items-center bg-light"
+>
+  <div
+    class="position-relative row w-100 h-100 bg-gredient justify-content-center"
+  >
+    <div class="col-lg-4 d-flex align-items-center">
+      <mat-card class="cardWithShadow boxed-auth">
+        <mat-card-content class="p-32">
+          <div class="text-center">
+            <a [routerLink]="['/dashboard']">
+              <img
+                src="./assets/images/logos/twyn_logo.jpg"
+                class="align-middle m-2 h-60%"
+                alt="logo"
+              />
+            </a>
+          </div>
+
+          <div class="row m-t-24 custom-row justify-content-center">
+            <div class="col-12 col-sm-6">
+              <button mat-stroked-button class="w-100">
+                <div class="d-flex align-items-center">
+                  <img
+                    src="/assets/images/svgs/google-icon.svg"
+                    alt="google"
+                    width="16"
+                    class="m-r-8"
+                  />
+                  <span (click)="onLoginGoogle()"> Login with Google </span>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <div class="or-border m-t-30">or sign in with</div>
+
+          <form class="m-t-30" [formGroup]="loginForm" (ngSubmit)="onLogin()">
+            <!-- Login method toggle -->
+            <div class="d-flex justify-content-center m-b-16">
+              <mat-button-toggle-group
+                [value]="loginWithEmail"
+                (change)="toggleLoginMethod()"
+                name="loginMethod"
+              >
+                <mat-button-toggle [value]="true">Email</mat-button-toggle>
+                <mat-button-toggle [value]="false">Username</mat-button-toggle>
+              </mat-button-toggle-group>
+            </div>
+
+            <!-- Email field (shown when loginWithEmail is true) -->
+            <div *ngIf="loginWithEmail">
+              <mat-label class="f-s-14 f-w-600 m-b-12 d-block"
+                >Email *</mat-label
+              >
+              <mat-form-field
+                appearance="outline"
+                class="w-100"
+                color="primary"
+              >
+                <input
+                  matInput
+                  formControlName="email"
+                  type="email"
+                  placeholder="Email address"
+                  autocomplete="email"
+                />
+                <mat-error *ngIf="loginForm.get('email')?.errors?.['required']"
+                  >Email is required</mat-error
+                >
+                <mat-error *ngIf="loginForm.get('email')?.errors?.['email']"
+                  >Please enter a valid email address</mat-error
+                >
+              </mat-form-field>
+            </div>
+
+            <!-- Username field (shown when loginWithEmail is false) -->
+            <div *ngIf="!loginWithEmail">
+              <mat-label class="f-s-14 f-w-600 m-b-12 d-block"
+                >Username *</mat-label
+              >
+              <mat-form-field
+                appearance="outline"
+                class="w-100"
+                color="primary"
+              >
+                <input
+                  matInput
+                  formControlName="username"
+                  placeholder="Username"
+                  autocomplete="username"
+                />
+                <mat-error
+                  *ngIf="loginForm.get('username')?.errors?.['required']"
+                  >Username is required</mat-error
+                >
+              </mat-form-field>
+            </div>
+
+            <!-- Password field -->
+            <mat-label class="f-s-14 f-w-600 m-b-12 d-block"
+              >Password *</mat-label
+            >
+            <mat-form-field appearance="outline" class="w-100" color="primary">
+              <input
+                matInput
+                formControlName="password"
+                [type]="hidePassword ? 'password' : 'text'"
+                placeholder="Password"
+                autocomplete="current-password"
+              />
+              <mat-icon matSuffix (click)="hidePassword = !hidePassword">
+                {{ hidePassword ? "visibility_off" : "visibility" }}
+              </mat-icon>
+              <mat-error *ngIf="loginForm.get('password')?.errors?.['required']"
+                >Password is required</mat-error
+              >
+            </mat-form-field>
+
+            <!-- Error message -->
+            <div *ngIf="loginError" class="text-danger m-b-16">
+              {{ loginError }}
+            </div>
+
+            <!-- Submit button -->
+            <button
+              mat-flat-button
+              color="primary"
+              class="w-100"
+              type="submit"
+              [disabled]="loginForm.invalid"
+            >
+              Sign In
+            </button>
+          </form>
+
+          <span class="d-block f-w-500 text-center m-t-24"
+            >New to TWYN?
+            <a
+              [routerLink]="['/authentication/register']"
+              class="text-decoration-none text-primary f-w-500 f-s-14"
+            >
+              Create an account</a
+            >
+          </span>
+          <span class="d-block f-w-500 text-center m-t-24"
+            >forget password?
+            <a
+              [routerLink]="['/authentication/resetPass/getEmail']"
+              class="text-decoration-none text-primary f-w-500 f-s-14"
+            >
+              Click here!</a
+            >
+          </span>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>

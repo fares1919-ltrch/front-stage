@@ -1,0 +1,365 @@
+<mat-card class="cardWithShadow">
+  <mat-card-content>
+    <!-- Process ID Form -->
+    <div class="process-id-form">
+      <form [formGroup]="processIdForm" (ngSubmit)="submitProcessId()">
+        <h2>Deduplication Process</h2>
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Or Enter other Process ID</mat-label>
+            <input
+              matInput
+              formControlName="processId"
+              placeholder="e.g. c872e915-3b7c-4311-bd3a-d5c4a02981e1"
+            />
+            <mat-error
+              *ngIf="processIdForm.get('processId')?.hasError('required')"
+            >
+              Process ID is required
+            </mat-error>
+            <mat-error
+              *ngIf="
+                processIdForm.get('processId')?.hasError('minlength') ||
+                processIdForm.get('processId')?.hasError('maxlength')
+              "
+            >
+              Process ID must be 36 characters
+            </mat-error>
+          </mat-form-field>
+          <button
+            type="submit"
+            mat-raised-button
+            color="primary"
+            [disabled]="processIdForm.invalid"
+          >
+            <mat-icon>search</mat-icon>
+            Find Process
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Error message display -->
+    @if(hasError && errorMessage) {
+    <div class="error-container">
+      <mat-icon color="warn">error_outline</mat-icon>
+      <p>{{ errorMessage }}</p>
+      <div class="error-actions">
+        <button
+          type="button"
+          mat-button
+          color="primary"
+          [routerLink]="['/features/processes']"
+        >
+          <mat-icon>refresh</mat-icon>
+          View All Processes
+        </button>
+        <button
+          type="button"
+          mat-button
+          color="accent"
+          [routerLink]="['/features/upload']"
+        >
+          <mat-icon>cloud_upload</mat-icon>
+          Go to Upload
+        </button>
+      </div>
+    </div>
+    }
+
+    <!-- Loading indicator -->
+    @if(isLoadingFiles) {
+    <div class="loading-container">
+      <mat-progress-spinner
+        mode="indeterminate"
+        diameter="40"
+      ></mat-progress-spinner>
+      <p>Loading process data...</p>
+    </div>
+    }
+
+    <!-- No processes found message -->
+    @if(stats.length === 0 && !isLoadingFiles && !hasError) {
+    <div class="no-processes">
+      <p>
+        No deduplication processes found. Upload a file to start a new process.
+      </p>
+      <button
+        type="button"
+        mat-raised-button
+        color="primary"
+        [routerLink]="['/features/upload']"
+      >
+        <mat-icon>cloud_upload</mat-icon>
+        Upload Files
+      </button>
+    </div>
+    }
+
+    <!-- Highlighted Process View -->
+    @if(highlightedProcessId && !showAllProcesses && stats.length > 0) {
+    <div class="highlighted-process-container">
+      <div class="process-header">
+        <h2>Process Details</h2>
+        <button
+          type="button"
+          mat-button
+          color="primary"
+          [routerLink]="['/features/processes']"
+        >
+          <mat-icon>list</mat-icon>
+          View All Processes
+        </button>
+      </div>
+
+      <mat-card class="process-details-card">
+        <mat-card-content>
+          <div class="process-info">
+            <div class="info-row">
+              <span class="info-label">Process ID:</span>
+              <span class="info-value process-id-value">{{
+                highlightedProcess && highlightedProcess.id
+                  ? highlightedProcess.id.includes("/")
+                    ? highlightedProcess.id.split("/")[1]
+                    : highlightedProcess.id
+                  : "N/A"
+              }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Name:</span>
+              <span class="info-value name-value">
+                <mat-icon class="name-icon">description</mat-icon>
+                {{ highlightedProcess?.name }}
+              </span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Created:</span>
+              <span class="info-value date-value">
+                <mat-icon class="date-icon">event</mat-icon>
+                {{ highlightedProcess?.createdAt | date : "mediumDate" }}
+                <span class="time-separator">at</span>
+                {{ highlightedProcess?.createdAt | date : "shortTime" }}
+              </span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Status:</span>
+              <span
+                class="info-value status-badge"
+                [ngClass]="
+                  'status-' +
+                  (highlightedProcess && highlightedProcess.status
+                    ? highlightedProcess.status.toLowerCase()
+                    : 'ready')
+                "
+              >
+                {{ highlightedProcess?.status || "Ready to Start" }}
+              </span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Files:</span>
+              <span class="info-value files-value">
+                <mat-icon class="files-icon">folder</mat-icon>
+                {{ highlightedProcess?.totalFiles || 0 }} file(s)
+              </span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">User:</span>
+              <span class="info-value user-value">
+                <mat-icon class="user-icon">person</mat-icon>
+                {{ highlightedProcess?.username }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Deduplication Action -->
+          <div class="deduplication-action">
+            <div class="action-buttons">
+              <button
+                type="button"
+                mat-raised-button
+                color="primary"
+                (click)="startDeduplication(highlightedProcessId)"
+                [disabled]="isProcessing"
+              >
+                <mat-icon>play_arrow</mat-icon>
+                Start Deduplication
+              </button>
+
+              @if(hasConflicts && conflictCount > 0) {
+              <button
+                type="button"
+                mat-raised-button
+                color="warn"
+                (click)="goToConflicts()"
+              >
+                <mat-icon>warning</mat-icon>
+                Go to Conflicts ({{ conflictCount }})
+              </button>
+              }
+            </div>
+
+            @if(isProcessing) {
+            <mat-progress-bar
+              mode="indeterminate"
+              class="m-t-8"
+            ></mat-progress-bar>
+            <p class="processing-text">Processing deduplication...</p>
+            } @if(deduplicationResult) {
+            <div
+              class="result-message"
+              [ngClass]="{
+                'success-message': deduplicationResult.success,
+                'error-message': !deduplicationResult.success
+              }"
+            >
+              <mat-icon>{{
+                deduplicationResult.success ? "check_circle" : "error"
+              }}</mat-icon>
+              <span>{{ deduplicationResult.message }}</span>
+            </div>
+            }
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Process Files - IMPROVED HORIZONTAL SCROLLING WITH SMALLER IMAGES -->
+      @if(processFiles.length > 0) {
+      <div class="process-files">
+        <div class="process-files-header">
+          <h3>Files in this Process</h3>
+          @if(hasConflicts && conflictCount > 0) {
+          <div class="conflict-warning">
+            <mat-icon color="warn">warning</mat-icon>
+            <span>{{ conflictCount }} file(s) with conflicts detected</span>
+            <button
+              type="button"
+              mat-button
+              color="warn"
+              (click)="goToConflicts()"
+            >
+              <mat-icon>visibility</mat-icon>
+              View Conflicts
+            </button>
+          </div>
+          }
+        </div>
+
+        @if(isLoadingFiles) {
+        <div class="loading-files">
+          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+          <p>Loading files...</p>
+        </div>
+        }
+
+        <!-- Enhanced horizontal scrolling container -->
+        @if(!isLoadingFiles) {
+        <div class="extracted-files-container">
+          <!-- Loading indicator for image previews -->
+          @if(isLoadingPreviews) {
+          <div class="preview-loading-container">
+            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+            <p>Loading image previews...</p>
+          </div>
+          }
+
+          <div class="files-grid">
+            @for(file of processFilesWithPreviews.length > 0 ?
+            processFilesWithPreviews : processFiles; track file.id) {
+            <mat-card
+              class="file-card"
+              [ngClass]="{
+                'conflict-card': file.status === 'Conflict',
+                'error-card': file.previewStatus === 'error'
+              }"
+            >
+              <div class="image-container">
+                <!-- Show loading spinner while preview is pending -->
+                @if(file.previewStatus === 'pending') {
+                <div class="preview-loading">
+                  <mat-spinner diameter="40"></mat-spinner>
+                  <p>Loading...</p>
+                </div>
+                }
+                <!-- Show image if preview is available -->
+                @else if(file.previewStatus === 'success' && (file.base64Preview
+                || (file.base64String && file.base64String.length > 0))) {
+                <img
+                  [src]="
+                    file.base64Preview ||
+                    (file.base64String
+                      ? 'data:image/jpeg;base64,' + file.base64String
+                      : '')
+                  "
+                  [alt]="file.fileName || 'Image'"
+                  [title]="file.fileName || 'Image'"
+                  class="file-image"
+                  (error)="handleImageError($event)"
+                />
+                }
+                <!-- Show error message if preview failed -->
+                @else if(file.previewStatus === 'error') {
+                <div class="error-image-container">
+                  <mat-icon class="error-image-icon">broken_image</mat-icon>
+                  <p>Failed to load image</p>
+                  <small *ngIf="file.previewError">{{
+                    file.previewError
+                  }}</small>
+                </div>
+                }
+                <!-- Show placeholder if no preview is available -->
+                @else {
+                <div class="no-image-container">
+                  <mat-icon class="no-image-icon">image_not_supported</mat-icon>
+                  <p>No image available</p>
+                </div>
+                }
+
+                <!-- Show conflict badge if file has conflicts -->
+                @if(file.status === 'Conflict') {
+                <div class="conflict-badge">
+                  <mat-icon>warning</mat-icon>
+                </div>
+                }
+              </div>
+              <mat-card-content>
+                <div class="file-details">
+                  <p class="file-name">{{ file.fileName }}</p>
+                  <p class="file-id">ID: {{ file.id }}</p>
+                  <p class="file-status">
+                    Status:
+                    <span
+                      class="file-status-badge"
+                      [ngClass]="
+                        'status-' +
+                        (file.status ? file.status.toLowerCase() : 'ready')
+                      "
+                    >
+                      {{ file.status || "Ready" }}
+                    </span>
+                  </p>
+                </div>
+              </mat-card-content>
+            </mat-card>
+            }
+          </div>
+        </div>
+        }
+      </div>
+      }
+    </div>
+    }
+
+    <!-- Link to Processes Overview -->
+    <div class="processes-link-container">
+      <button
+        type="button"
+        mat-raised-button
+        color="primary"
+        [routerLink]="['/features/processes']"
+      >
+        <mat-icon>list</mat-icon>
+        View All Processes
+      </button>
+    </div>
+  </mat-card-content>
+</mat-card>

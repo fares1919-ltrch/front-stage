@@ -1,0 +1,24 @@
+.nav-caption {
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.6);
+  
+  .nav-caption-icon {
+    margin-right: 8px;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: rgba(0, 0, 0, 0.6);
+  }
+}
+
+:host-context(.dark-theme) {
+  .nav-caption {
+    color: rgba(255, 255, 255, 0.7);
+    
+    .nav-caption-icon {
+      color: rgba(255, 255, 255, 0.7);
+    }
+  }
+}

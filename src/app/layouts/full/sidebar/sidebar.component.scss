@@ -1,0 +1,148 @@
+.sidebar-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  /* Remove the auto scrolling from container */
+  overflow: hidden;
+  position: relative;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  height: 70px; /* Match header height */
+  position: sticky;
+  top: 0;
+  z-index: 10;
+
+  .branding {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+
+    .logo {
+
+    }
+  }
+
+  /* For desktop view */
+  @media (min-width: 769px) {
+    margin-top: 0;
+
+    .branding .logo {
+      height: 40px;
+    }
+  }
+}
+
+.navigation-container {
+  flex: 1;
+  /* This is the only element that should scroll */
+  overflow-y: auto;
+  /* Show a visible scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
+
+  /* Custom scrollbar for WebKit browsers */
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+    display: block;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+}
+
+.sidebar-nav {
+  padding: 0;
+
+  .mat-subheader.nav-caption {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 500;
+    height: 48px;
+    padding: 0 16px;
+    margin: 0;
+  }
+}
+
+/* Close button styling */
+.close-button {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.05);
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.close-icon {
+  width: 20px;
+  height: 20px;
+  color: #333;
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+  .sidebar-container {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .navigation-container {
+    height: calc(100vh - 100px);
+    padding-bottom: 20px;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+
+    /* Force scrollbar visibility on mobile */
+    &::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+      display: block !important;
+      background-color: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: rgba(0, 0, 0, 0.3);
+      border-radius: 4px;
+    }
+  }
+
+  .sidebar-header {
+    margin-top: 0;
+    padding: 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    flex-shrink: 0;
+  }
+}
