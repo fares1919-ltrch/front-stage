@@ -40,6 +40,3 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
-/Backend Stage/admin.client.certificate.twyn.crt
-/Backend Stage/azure-pipelines.yml
-/Backend Stage/.gitignore
